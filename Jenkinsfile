@@ -10,21 +10,26 @@ pipeline {
         stage('Setup') {
             steps {
                 sh '''
-                        # Install unzip (required for Deno installation)
-                        apt-get update
-                        apt-get install -y unzip
+                    # Install unzip (required for Deno installation)
+                    apt-get update
+                    apt-get install -y unzip
 
-                        # Install Deno
-                        curl -fsSL https://deno.land/x/install/install.sh | sh
+                    # Install Deno
+                    curl -fsSL https://deno.land/x/install/install.sh | sh
 
-                        # Update PATH for this session
-                        export DENO_INSTALL="${HOME}/.deno"
-                        export PATH="${DENO_INSTALL}/bin:${PATH}"
+                    # Update PATH for this session
+                    export DENO_INSTALL="${HOME}/.deno"
+                    export PATH="${DENO_INSTALL}/bin:${PATH}"
 
-                        # Verify Deno installation
-                        deno --version
-                    fi
+                    # Verify Deno installation
+                    deno --version
                 '''
+
+                // Update Jenkins environment variables
+                script {
+                    env.DENO_INSTALL = "${HOME}/.deno"
+                    env.PATH = "${env.DENO_INSTALL}/bin:${env.PATH}"
+                }
             }
         }
 
@@ -92,12 +97,11 @@ pipeline {
                 }
             }
             post {
-                   always {
-                       sh 'deno --unstable kill || true'
-                       echo 'Preview server stopped.'
-                   }
-               }
-
+                always {
+                    sh 'deno --unstable kill || true'
+                    echo 'Preview server stopped.'
+                }
+            }
         }
     }
 
