@@ -1,5 +1,5 @@
 pipeline {
-    agent {label 'agent1'}
+    agent { label 'agent1' }
 
     environment {
         DENO_INSTALL = "${HOME}/.deno"
@@ -7,18 +7,25 @@ pipeline {
     }
 
     stages {
-        stage('Checkout') {
+        stage('Setup') {
             steps {
-                git 'https://github.com/BrunoF051/fresh-project.git'
+                sh '''
+                    # Update and install necessary tools
+                    sudo apt-get update && sudo apt-get install -y curl git
+
+                    # Install Deno
+                    curl -fsSL https://deno.land/x/install/install.sh | sh
+                    echo 'export DENO_INSTALL="/home/jenkins/.deno"' >> $HOME/.bashrc
+                    echo 'export PATH="$DENO_INSTALL/bin:$PATH"' >> $HOME/.bashrc
+                    source $HOME/.bashrc
+                    deno --version
+                '''
             }
         }
 
-        stage('Install Deno') {
+        stage('Checkout') {
             steps {
-                sh '''
-                    curl -fsSL https://deno.land/x/install/install.sh | sh
-                    deno --version
-                '''
+                checkout scm
             }
         }
 
