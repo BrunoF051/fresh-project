@@ -11,8 +11,8 @@ pipeline {
             steps {
                 sh '''
                     # Install unzip (required for Deno installation)
-                    sudo apt-get update
-                    sudo apt-get install -y unzip
+                    apt-get update
+                    apt-get install -y unzip
 
                     # Install Deno
                     curl -fsSL https://deno.land/x/install/install.sh | sh
