@@ -10,23 +10,33 @@ pipeline {
         stage('Setup') {
             steps {
                 sh '''
-                    # Install unzip (required for Deno installation)
-                    apt-get update
-                    apt-get install -y unzip
+                    # Check if Deno is already installed
+                    if command -v deno &> /dev/null
+                    then
+                        echo "Deno is already installed"
+                        deno --version
+                    else
+                        echo "Deno is not installed. Installing now..."
 
-                    # Install Deno
-                    curl -fsSL https://deno.land/x/install/install.sh | sh
+                        # Install unzip (required for Deno installation)
+                        apt-get update
+                        apt-get install -y unzip
 
-                    # Update PATH for this session
-                    export DENO_INSTALL="${HOME}/.deno"
-                    export PATH="${DENO_INSTALL}/bin:${PATH}"
+                        # Install Deno
+                        curl -fsSL https://deno.land/x/install/install.sh | sh
 
-                    # Verify Deno installation
-                    deno --version
+                        # Update PATH for this session
+                        export DENO_INSTALL="${HOME}/.deno"
+                        export PATH="${DENO_INSTALL}/bin:${PATH}"
+
+                        # Verify Deno installation
+                        deno --version
+                    fi
                 '''
 
                 // Update Jenkins environment variables
                 script {
+                    env.DENO_INSTALL = "${HOME}/.deno"
                     env.PATH = "${env.DENO_INSTALL}/bin:${env.PATH}"
                 }
             }
@@ -71,12 +81,12 @@ pipeline {
             }
         }
 
-
         stage('Build') {
             steps {
                 sh 'deno task build'
             }
         }
+
         stage('Preview') {
             steps {
                 script {
@@ -103,7 +113,6 @@ pipeline {
                 }
             }
         }
-
     }
 
     post {
