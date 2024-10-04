@@ -11,13 +11,13 @@ pipeline {
             steps {
                 sh '''
                     # Update and install necessary tools
-                    sudo apt-get update && sudo apt-get install -y curl git
+                    apk update && apk add --no-cache curl git
 
                     # Install Deno
                     curl -fsSL https://deno.land/x/install/install.sh | sh
-                    echo 'export DENO_INSTALL="/home/jenkins/.deno"' >> $HOME/.bashrc
-                    echo 'export PATH="$DENO_INSTALL/bin:$PATH"' >> $HOME/.bashrc
-                    source $HOME/.bashrc
+                    echo 'export DENO_INSTALL="/home/jenkins/.deno"' >> $HOME/.profile
+                    echo 'export PATH="$DENO_INSTALL/bin:$PATH"' >> $HOME/.profile
+                    source $HOME/.profile
                     deno --version
                 '''
             }
