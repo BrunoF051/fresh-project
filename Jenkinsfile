@@ -78,9 +78,6 @@ pipeline {
             }
         }
         stage('Preview') {
-            when {
-                branch 'master'
-            }
             steps {
                 script {
                     // Start the preview in the background
