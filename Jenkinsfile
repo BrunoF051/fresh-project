@@ -77,16 +77,36 @@ pipeline {
                 sh 'deno task build'
             }
         }
-
-        stage('Deploy') {
+        stage('Preview') {
             when {
                 branch 'master'
             }
             steps {
-                // Add your deployment steps here
-                echo 'Deploying...'
+                script {
+                    // Start the preview in the background
+                    sh 'nohup deno task preview > preview.log 2>&1 &'
+
+                    // Wait for the server to start
+                    sh 'sleep 5'
+
+                    // Check if the server is running
+                    sh 'curl -f http://localhost:8000 || (echo "Preview server failed to start" && exit 1)'
+
+                    echo 'Preview server is running. You can access it at http://localhost:8000'
+
+                    // Wait for user input to stop the preview
+                    input message: 'Preview is running. Click "Proceed" to stop the preview and continue.'
+                }
+            }
+            post {
+                always {
+                    // Stop the preview server
+                    sh 'pkill -f "deno task preview"'
+                    echo 'Preview server stopped.'
+                }
             }
         }
+
     }
 
     post {
