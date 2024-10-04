@@ -106,12 +106,12 @@ pipeline {
                 }
             }
             post {
-                always {
-                    // Stop the preview server
-                    sh 'pkill -f "deno task preview"'
-                    echo 'Preview server stopped.'
-                }
-            }
+                   always {
+                       sh 'deno --unstable kill || true'
+                       echo 'Preview server stopped.'
+                   }
+               }
+
         }
     }
 
