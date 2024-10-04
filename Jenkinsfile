@@ -50,8 +50,10 @@ pipeline {
             }
         }
 
-        stage('Format Check') {
+        stage('Format') {
             steps {
+                sh 'deno fmt'
+                sh 'git diff'  // This will show what changed
                 sh 'deno fmt --check'
             }
         }
