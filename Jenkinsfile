@@ -10,10 +10,6 @@ pipeline {
         stage('Setup') {
             steps {
                 sh '''
-                    # Update and install necessary tools
-                    apt-get update
-                    apt-get install -y curl git unzip
-
                     # Install Deno
                     curl -fsSL https://deno.land/x/install/install.sh | sh
                     echo 'export DENO_INSTALL="/home/jenkins/.deno"' >> $HOME/.bashrc
