@@ -25,12 +25,6 @@ pipeline {
                         deno --version
                     fi
                 '''
-
-                // Update Jenkins environment variables
-                script {
-                    env.DENO_INSTALL = "${HOME}/.deno"
-                    env.PATH = "${env.DENO_INSTALL}/bin:${env.PATH}"
-                }
             }
         }
 
