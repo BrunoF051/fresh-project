@@ -3,7 +3,7 @@ pipeline {
 
     environment {
         DENO_INSTALL = "${HOME}/.deno"
-        PATH = "${DENO_INSTALL}/bin:${PATH}"
+        PATH = "${env.DENO_INSTALL}/bin:${env.PATH}"
     }
 
     stages {
@@ -11,14 +11,24 @@ pipeline {
             steps {
                 sh '''
                     # Install unzip (required for Deno installation)
-                    apt-get update
-                    apt-get install -y unzip
+                    sudo apt-get update
+                    sudo apt-get install -y unzip
+
                     # Install Deno
                     curl -fsSL https://deno.land/x/install/install.sh | sh
-                    echo 'export DENO_INSTALL="$HOME/.deno"' >> $HOME/.bashrc
-                    echo 'export PATH="$DENO_INSTALL/bin:$PATH"' >> $HOME/.bashrc
-                    source $HOME/.bashrc
+
+                    # Update PATH for this session
+                    export DENO_INSTALL="${HOME}/.deno"
+                    export PATH="${DENO_INSTALL}/bin:${PATH}"
+
+                    # Verify Deno installation
+                    deno --version
                 '''
+
+                // Update Jenkins environment variables
+                script {
+                    env.PATH = "${env.DENO_INSTALL}/bin:${env.PATH}"
+                }
             }
         }
 
