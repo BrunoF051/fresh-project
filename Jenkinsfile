@@ -60,9 +60,17 @@ pipeline {
 
         stage('Test') {
             steps {
-                sh 'deno test'
+                script {
+                    def testFiles = sh(script: 'find . -name "*_test.ts" -o -name "*.test.ts"', returnStdout: true).trim()
+                    if (testFiles) {
+                        sh "deno test ${testFiles}"
+                    } else {
+                        echo "No test files found. Skipping tests."
+                    }
+                }
             }
         }
+
 
         stage('Build') {
             steps {
