@@ -9,32 +9,30 @@ pipeline {
     stages {
         stage('Setup') {
             steps {
+                sh '''
+                        # Install unzip (required for Deno installation)
+                        apt-get update
+                        apt-get install -y unzip
+
+                        # Install Deno
+                        curl -fsSL https://deno.land/x/install/install.sh | sh
+
+                        # Update PATH for this session
+                        export DENO_INSTALL="${HOME}/.deno"
+                        export PATH="${DENO_INSTALL}/bin:${PATH}"
+
+                        # Verify Deno installation
+                        deno --version
+                    fi
+                '''
+
+                // Update Jenkins environment variables
                 script {
-                    def denoInstalled = sh(script: 'command -v deno', returnStatus: true) == 0
-                    if (denoInstalled) {
-                        echo "Deno is already installed"
-                        sh 'deno --version'
-                    } else {
-                        echo "Deno is not installed. Installing now..."
-
-                        // Download and install Deno
-                        sh """
-                            curl -fsSL https://deno.land/x/install/install.sh | sh
-                            export DENO_INSTALL="\${HOME}/.deno"
-                            export PATH="\${DENO_INSTALL}/bin:\${PATH}"
-                            echo "export DENO_INSTALL=\${HOME}/.deno" >> \${HOME}/.bashrc
-                            echo 'export PATH="\${DENO_INSTALL}/bin:\${PATH}"' >> \${HOME}/.bashrc
-                            deno --version
-                        """
-
-                        // Update Jenkins environment variables
-                        env.DENO_INSTALL = "${HOME}/.deno"
-                        env.PATH = "${env.DENO_INSTALL}/bin:${env.PATH}"
-                    }
+                    env.DENO_INSTALL = "${HOME}/.deno"
+                    env.PATH = "${env.DENO_INSTALL}/bin:${env.PATH}"
                 }
             }
         }
-
 
         stage('Checkout') {
             steps {
