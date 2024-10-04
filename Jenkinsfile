@@ -10,6 +10,13 @@ pipeline {
         stage('Setup') {
             steps {
                 sh '''
+                    # Install 7zip
+                    mkdir -p ${SEVENZIP_DIR}
+                    curl -L https://www.7-zip.org/a/7z2201-linux-x64.tar.xz -o ${SEVENZIP_DIR}/7zip.tar.xz
+                    tar -xf ${SEVENZIP_DIR}/7zip.tar.xz -C ${SEVENZIP_DIR}
+                    chmod +x ${SEVENZIP_DIR}/7zz
+                    export PATH="${SEVENZIP_DIR}:${PATH}"
+
                     # Install Deno
                     curl -fsSL https://deno.land/x/install/install.sh | sh
                     echo 'export DENO_INSTALL="/home/jenkins/.deno"' >> $HOME/.bashrc
