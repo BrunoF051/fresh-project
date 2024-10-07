@@ -29,7 +29,8 @@ pipeline {
             steps {
                 sh 'deno fmt'
                 sh 'git diff'  // This will show what changed
-                sh 'deno fmt --check'
+                sh 'git add .'
+                sh 'git commit -m "Auto-format code" || true'
             }
         }
 
@@ -53,32 +54,30 @@ pipeline {
         }
 
         stage('Run and Preview') {
-                   steps {
-                       script {
-                           // Start the application in the background
-                           sh 'deno run --allow-net main.ts &'
+            steps {
+                script {
+                    // Start the application in the background
+                    sh 'deno run --allow-net main.ts &'
 
-                           // Wait for the application to start
-                           sh 'sleep 5'
+                    // Wait for the application to start
+                    sh 'sleep 5'
 
-                           // Check if the application is running
-                           sh 'curl -f http://localhost:8000 || (echo "Application failed to start" && exit 1)'
+                    // Check if the application is running
+                    sh 'curl -f http://localhost:8000 || (echo "Application failed to start" && exit 1)'
 
-                           echo 'Application is running. You can access it at http://localhost:8000'
+                    echo 'Application is running. You can access it at http://localhost:8000'
 
-                           // Wait for user input to stop the application
-                           input message: 'Application is running. Click "Proceed" to stop the application and continue.'
-                       }
-                   }
-                   post {
-                       always {
-                           sh 'deno --unstable kill || true'
-                           echo 'Preview server stopped.'
-                       }
-                   }
-               }
-           }
-
+                    // Wait for user input to stop the application
+                    input message: 'Application is running. Click "Proceed" to stop the application and continue.'
+                }
+            }
+            post {
+                always {
+                    sh 'deno --unstable kill || true'
+                    echo 'Preview server stopped.'
+                }
+            }
+        }
     }
 
     post {
