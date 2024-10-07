@@ -1,45 +1,19 @@
 pipeline {
-    agent { label 'agent1' }
-
-    environment {
-        DENO_INSTALL = "${HOME}/.deno"
-        PATH = "${env.DENO_INSTALL}/bin:${env.PATH}"
+    agent {
+        docker {
+            image 'denoland/deno:2.0.0-rc.10'
+            args '--network host'
+        }
     }
 
     stages {
-        stage('Setup') {
-            steps {
-                sh '''
-                    # Install unzip (required for Deno installation)
-                    apt-get update
-                    apt-get install -y unzip
-
-                    # Install Deno
-                    curl -fsSL https://deno.land/x/install/install.sh | sh
-
-                    # Update PATH for this session
-                    export DENO_INSTALL="${HOME}/.deno"
-                    export PATH="${DENO_INSTALL}/bin:${PATH}"
-
-                    # Verify Deno installation
-                    deno --version
-                '''
-
-                // Update Jenkins environment variables
-                script {
-                    env.DENO_INSTALL = "${HOME}/.deno"
-                    env.PATH = "${env.DENO_INSTALL}/bin:${env.PATH}"
-                }
-            }
-        }
-
         stage('Checkout') {
             steps {
                 checkout scm
             }
         }
 
-        stage('Install dependencies') {
+        stage('Cache Dependencies') {
             steps {
                 sh 'deno cache main.ts'
             }
@@ -78,31 +52,33 @@ pipeline {
             }
         }
 
-        stage('Preview') {
-            steps {
-                script {
-                    // Start the preview in the background
-                    sh 'nohup deno task preview > preview.log 2>&1 &'
+        stage('Run and Preview') {
+                   steps {
+                       script {
+                           // Start the application in the background
+                           sh 'deno run --allow-net main.ts &'
 
-                    // Wait for the server to start
-                    sh 'sleep 5'
+                           // Wait for the application to start
+                           sh 'sleep 5'
 
-                    // Check if the server is running
-                    sh 'curl -f http://localhost:8000 || (echo "Preview server failed to start" && exit 1)'
+                           // Check if the application is running
+                           sh 'curl -f http://localhost:8000 || (echo "Application failed to start" && exit 1)'
 
-                    echo 'Preview server is running. You can access it at http://localhost:8000'
+                           echo 'Application is running. You can access it at http://localhost:8000'
 
-                    // Wait for user input to stop the preview
-                    input message: 'Preview is running. Click "Proceed" to stop the preview and continue.'
-                }
-            }
-            post {
-                always {
-                    sh 'deno --unstable kill || true'
-                    echo 'Preview server stopped.'
-                }
-            }
-        }
+                           // Wait for user input to stop the application
+                           input message: 'Application is running. Click "Proceed" to stop the application and continue.'
+                       }
+                   }
+                   post {
+                       always {
+                           sh 'deno --unstable kill || true'
+                           echo 'Preview server stopped.'
+                       }
+                   }
+               }
+           }
+
     }
 
     post {
